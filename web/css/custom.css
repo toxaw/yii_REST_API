@@ -1,0 +1,80 @@
+.bg-success {
+    background-color: #82d094 !important;
+}
+.bg-danger {
+    background-color: #f19aa3 !important;
+}
+.alert,
+.alert pre {
+    font-family: "Courier New";
+}
+.alert-info {
+    background-color: #4a5456;
+    color: #fff;
+    border-color: #fff;
+}
+.alert-info pre {
+    color: #fff;
+}
+.list-group-item {
+    min-height: 69px;
+}
+.list-group-item:not(.bg-custom):hover {
+    background-color: rgba(100,100,100,.125);
+}
+li,
+li > div {
+    display: block;
+    width: 100%;
+    position: relative;
+}
+.btn-absolute {
+    position: absolute;
+    right: 10px;
+    top: 3px;
+}
+.ok {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #eee;
+    left: -100px;
+    top: -5px;
+    line-height: 50px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+}
+.ok.active {
+    background-color: #82d094;
+}
+.finish {
+    height: 69px;
+    background-color: #a29e9e !important;
+}
+.finish .other {
+    display: none;
+}
+.menu-list{
+    position: fixed;
+    top: 100px;
+}
+.menu {
+    top: 100px;
+    left: 20px;
+}
+.menu a {
+    min-height: auto;
+    cursor: pointer;
+}
+.scrollId {
+    position: absolute;
+    margin-top: -80px;
+}
+.mainContent{
+    justify-content: space-between;
+    display: flex;
+    width: 100%;
+}
