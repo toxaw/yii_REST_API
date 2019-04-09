@@ -9,8 +9,6 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\User;
 
-use yii\base\Theme;
-
 class ApiController extends Controller
 {
     /**
@@ -58,6 +56,13 @@ class ApiController extends Controller
         ];
     }
 
+    public function beforeAction($action)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        return true;
+    }
+
     /**
      * Displays homepage.
      *
@@ -69,9 +74,25 @@ class ApiController extends Controller
         
         if ($model->load(['User' => Yii::$app->request->post()]) && $token = $model->auth()) 
         {
-            die($token);
+
+            Yii::$app->response->statusCode = 200;
+
+            Yii::$app->response->statusText = 'Successful authorization';    
+
+            return [
+                'status'    =>  true,
+                'token'     =>  $token
+            ];
         }
 
-        die('false');
+        Yii::$app->response->statusCode = 401;
+
+        Yii::$app->response->statusText = 'Invalid authorization data';    
+
+        return [
+            'status'    =>  false,
+            'message'   =>  'Invalid authorization data'
+        ];
+        
     }
 }
