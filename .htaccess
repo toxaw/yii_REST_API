@@ -4,11 +4,15 @@
 </IfModule>
  
 <IfModule mod_rewrite.c>
+
     RewriteCond %{REQUEST_URI} ^/.*
+	RewriteCond %{REQUEST_URI} !^/basic/api/post_images/+
     RewriteRule ^(.*)$ web/$1 [L]
 
-    RewriteCond %{REQUEST_URI} !^/web/
+   	RewriteCond %{REQUEST_URI} !^/web/
+   	RewriteCond %{REQUEST_URI} !^/basic/api/post_images/+
     RewriteCond %{REQUEST_FILENAME} !-f [OR]
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^.*$ web/index.php
+   	RewriteCond %{REQUEST_FILENAME} !-d
+
+   	RewriteRule ^.*$ web/index.php
 </IfModule> 

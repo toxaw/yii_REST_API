@@ -8,6 +8,8 @@ use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\User;
+use app\models\Post;
+use yii\web\UploadedFile;
 
 class ApiController extends Controller
 {
@@ -60,6 +62,26 @@ class ApiController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
+        if(Yii::$app->controller->action->id!='auth')
+        {
+            $token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
+
+            $model = new User();
+
+            if(!$model->findIdentityByAccessToken($token))
+            {
+                Yii::$app->response->statusCode = 401;
+
+                Yii::$app->response->statusText = 'Unauthorized';    
+
+                Yii::$app->response->data = [
+                    'message'   =>  'Unauthorized',
+                ];     
+
+                return false;                  
+            }
+        }
+
         return true;
     }
 
@@ -92,7 +114,49 @@ class ApiController extends Controller
         return [
             'status'    =>  false,
             'message'   =>  'Invalid authorization data'
-        ];
+        ];     
+    }
+
+    public function actionPosts()
+    {
+
+        $model = new Post();
         
+        $model->load(['Post' => Yii::$app->request->post()]);
+
+        $model->image = UploadedFile::getInstanceByName('image');
+
+        if ($post_id = $model->create()) 
+        {
+            Yii::$app->response->statusCode = 201;
+
+            Yii::$app->response->statusText = 'Successful creation';    
+
+            return [
+                'status'    =>  true,
+                'post_id'     =>  $post_id
+            ];
+        }
+
+        Yii::$app->response->statusCode = 400;
+
+        Yii::$app->response->statusText = 'Creating error';    
+
+        return [
+            'status'    =>  false,
+            'message'   =>  $this->formatError($model)
+        ]; 
+    }
+
+    protected function formatError($model)
+    {
+        $error = [];
+
+        foreach ($model->getErrors() as $key => $value) 
+        {
+            $error[$key] = $value[0];
+        }
+
+        return $error;
     }
 }

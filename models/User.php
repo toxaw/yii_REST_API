@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use yii\db\ActiveRecord;
+
 use Yii;
 
 /**
@@ -12,7 +14,7 @@ use Yii;
  * @property string $password
  * @property string $token
  */
-class User extends \yii\db\ActiveRecord
+class User extends ActiveRecord 
 {
     /**
      * {@inheritdoc}
@@ -35,5 +37,10 @@ class User extends \yii\db\ActiveRecord
     public function auth()
     {
        return $this->findOne(['login' => $this->login, 'password' => $this->password])->token ?? false;
+    }
+
+    public static function findIdentityByAccessToken($token)
+    {
+        return static::findOne(['token' => $token]);
     }
 }

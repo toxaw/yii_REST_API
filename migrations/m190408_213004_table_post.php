@@ -15,8 +15,9 @@ class m190408_213004_table_post extends Migration
          $this->createTable('post', [
             'id' => $this->primaryKey(),
             'title' => $this->string(255),
-            'anons' => $this->string(255),
+            'anons' => $this->text(),
             'text' => $this->text(),
+            'image' => $this->integer(1),
             'image' => $this->string(255),
             'date'  => $this->dateTime(),
         ]);
