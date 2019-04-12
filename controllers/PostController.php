@@ -9,6 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Post;
+use app\models\Comment;
 use yii\web\UploadedFile;
 
 class PostController extends Controller
@@ -180,16 +181,14 @@ class PostController extends Controller
                 'status'    =>  'true',
             ];         
         }
-        else
-        {          
-            Yii::$app->response->statusCode = 404;
+      
+        Yii::$app->response->statusCode = 404;
 
-            Yii::$app->response->statusText = 'Post not found';    
+        Yii::$app->response->statusText = 'Post not found';    
 
-            return [
-                'message' => 'Post not found'
-            ]; 
-        }
+        return [
+            'message' => 'Post not found'
+        ]; 
     }
 
     public function actionGetposts()
@@ -208,6 +207,32 @@ class PostController extends Controller
 
     public function actionGetpost($post_id = null)
     {
+        if($post = Post::findOne($post_id))
+        {
+            $post = $post->toArray();
+
+            $post['image'] = Yii::$app->urlManager->createAbsoluteUrl(Yii::getAlias('@imageUrl') . '/' . $post['image']);
+
+            $post['datetime'] = Yii::$app->formatter->asDate($post['datetime'], 'php:H:i d.m.Y');
+
+            $post['rating'] = round($post['rating'], 1);
+
+            $post['comments'] = $posts = Comment::find()->select(['id as comment_id',"DATE_FORMAT(`datetime`, '%H:%i %d.%m.%Y') as datetime",'author','comment'])->where(['post_id' => $post_id])->asArray()->all();
+
+            Yii::$app->response->statusCode = 200;
+
+            Yii::$app->response->statusText = 'View post';    
+
+            return $post;
+        }
+
+        Yii::$app->response->statusCode = 404;
+
+        Yii::$app->response->statusText = 'Post not found';    
+
+        return [
+            'message' => 'Post not found'
+        ]; 
         
     }
 
