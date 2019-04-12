@@ -11,7 +11,7 @@ use app\models\User;
 use app\models\Post;
 use yii\web\UploadedFile;
 
-class ApiController extends Controller
+class PostController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -62,59 +62,24 @@ class ApiController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        if(Yii::$app->controller->action->id!='auth')
+        $token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
+
+        $model = new User();
+
+        if(!$model->findIdentityByAccessToken($token))
         {
-            $token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
+            Yii::$app->response->statusCode = 401;
 
-            $model = new User();
+            Yii::$app->response->statusText = 'Unauthorized';    
 
-            if(!$model->findIdentityByAccessToken($token))
-            {
-                Yii::$app->response->statusCode = 401;
+            Yii::$app->response->data = [
+                'message'   =>  'Unauthorized',
+            ];     
 
-                Yii::$app->response->statusText = 'Unauthorized';    
-
-                Yii::$app->response->data = [
-                    'message'   =>  'Unauthorized',
-                ];     
-
-                return false;                  
-            }
+            return false;                  
         }
 
         return true;
-    }
-
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionAuth()
-    {      
-        $model = new User();
-        
-        if ($model->load(['User' => Yii::$app->request->post()]) && $token = $model->auth()) 
-        {
-
-            Yii::$app->response->statusCode = 200;
-
-            Yii::$app->response->statusText = 'Successful authorization';    
-
-            return [
-                'status'    =>  'true',
-                'token'     =>  $token
-            ];
-        }
-
-        Yii::$app->response->statusCode = 401;
-
-        Yii::$app->response->statusText = 'Invalid authorization data';    
-
-        return [
-            'status'    =>  false,
-            'message'   =>  'Invalid authorization data'
-        ];     
     }
 
     public function actionPosts()
@@ -196,6 +161,32 @@ class ApiController extends Controller
             'status'    =>  'false',
             'message'   =>  $this->formatError($model)
         ];         
+    }
+
+    public function actionDelete($post_id = null)
+    {
+        if($model = Post::findOne($post_id))
+        {   
+            $model->delete();
+            
+            Yii::$app->response->statusCode = 201;
+
+            Yii::$app->response->statusText = 'Successful delete';    
+
+            return [
+                'status'    =>  'true',
+            ];         
+        }
+        else
+        {          
+            Yii::$app->response->statusCode = 404;
+
+            Yii::$app->response->statusText = 'Post not found';    
+
+            return [
+                'message' => 'Post not found'
+            ]; 
+        }
     }
 
     protected function formatError($model)

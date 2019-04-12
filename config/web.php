@@ -54,9 +54,10 @@ $config = [
             'enableStrictParsing' => true,
             'rules' => [
             '/' => 'site/index',
-            'POST api/auth' => 'api/auth',
-            'POST api/posts' => 'api/posts',
-            'POST api/posts/<post_id:(\d+)|$>' => 'api/edit',
+            'POST api/auth' => 'auth/auth',
+            'POST api/posts' => 'post/posts',
+            'POST api/posts/<post_id:(\d+)|$>' => 'post/edit',
+            'DELETE api/posts/<post_id:(\d+)|$>' => 'post/delete',
             ],
         ],
         

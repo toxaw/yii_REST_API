@@ -83,4 +83,11 @@ class Post extends \yii\db\ActiveRecord
             return false;
         }
     }
+
+    public function delete()
+    {
+        @unlink(Yii::getAlias('@imagePath') . $this->image);
+
+        parent::delete();
+    }
 }
