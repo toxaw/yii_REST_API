@@ -33,7 +33,7 @@ class Comment extends \yii\db\ActiveRecord
     {
         return [
             [['post_id', 'author', 'comment'], 'required'],
-            /*rating*/
+            [['rating'], 'validateRating'],
             [['post_id', 'rating'], 'integer'],
             [['comment'], 'string', 'max' => 255],
             [['datetime'], 'safe'],
@@ -57,6 +57,16 @@ class Comment extends \yii\db\ActiveRecord
         ];
     }
 
+    public function validateRating($attribute, $param)
+    {
+        $param = $this->$attribute;
+
+        if (!(is_numeric($param) && $param>=1 && $param<=5))
+        {
+            $this->addError($attribute, [$attribute . ' not number or min 1 and max 5']);  
+        }     
+    }
+
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -68,13 +78,17 @@ class Comment extends \yii\db\ActiveRecord
     public function create()
     {
         if ($this->validate()) 
-        {       
-            $this->datetime = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
+        { 
+            date_default_timezone_set('Europe/Moscow');
+            
+            $this->rating = 0;
 
-            $this->post->rating_sum = $this->post->rating_sum + $this->rating;
+            $this->datetime = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
             
             $this->save(false);
-            
+
+            $this->post->rating_sum = $this->post->rating_sum + $this->rating;
+
             $count = count($this->post->comments);
 
             $this->post->rating = $this->post->rating_sum / $count;
@@ -87,5 +101,24 @@ class Comment extends \yii\db\ActiveRecord
         {
             return false;
         }
+    }
+
+    public function delete()
+    {
+        $post = $this->post;
+
+        $current_rating_sum = $this->rating; 
+
+        parent::delete(); 
+
+        $comments = $this->post->comments;
+
+        $post->rating_sum = array_sum(array_column($comments, 'rating'));
+
+        $count = count($comments);
+
+        $post->rating = $count?($post->rating_sum / $count):0;
+
+        $post->save(false);
     }
 }

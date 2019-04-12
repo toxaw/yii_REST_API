@@ -65,14 +65,14 @@ class CommentController extends Controller
     {
         $this->isAdmin = false;
 
+        $model = new User();
+
+        $this->token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
+
         Yii::$app->response->format = Response::FORMAT_JSON;
 
         if(!in_array(Yii::$app->controller->action->id, ['comments']))
         {
-            $this->token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
-
-            $model = new User();
-
             if(!$model->findIdentityByAccessToken($this->token))
             {
                 Yii::$app->response->statusCode = 401;
@@ -85,10 +85,11 @@ class CommentController extends Controller
 
                 return false;                  
             }
-            else
-            {
-                 $this->isAdmin = true;
-            }
+        }
+
+        if($model->findIdentityByAccessToken($this->token))
+        {
+            $this->isAdmin = true;                
         }
 
         return true;
@@ -102,7 +103,7 @@ class CommentController extends Controller
 
             $model->post_id = $post_id;
 
-            $model->load(['Comment' => Yii::$app->request->post()]);
+            $model->load(['Comment' => Yii::$app->request->post()]);      
             
             if($this->isAdmin)
             {
@@ -141,10 +142,21 @@ class CommentController extends Controller
         ];
     }
 
-    public function actionDelete($post_id = null)
+    public function actionDelete($post_id = null, $comment_id = null)
     {
-        if($model = Post::findOne($post_id))
-        {   
+        if(Post::findOne($post_id))
+        {  
+            if(!($model = Comment::findOne($comment_id)))
+            {
+                Yii::$app->response->statusCode = 404;
+
+                Yii::$app->response->statusText = 'Comment not found';    
+
+                return [
+                    'message' => 'Comment not found'
+                ]; 
+            } 
+            
             $model->delete();
             
             Yii::$app->response->statusCode = 201;
@@ -152,7 +164,7 @@ class CommentController extends Controller
             Yii::$app->response->statusText = 'Successful delete';    
 
             return [
-                'status'    =>  'true',
+                'status' =>  'true',
             ];         
         }
         else

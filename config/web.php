@@ -61,6 +61,7 @@ $config = [
             'GET api/posts' => 'post/getposts',
             'GET api/posts/<post_id:(\d+)|$>' => 'post/getpost',
             'POST api/posts/<post_id:(\d+)|>/comments' => 'comment/comments',
+            'DELETE api/posts/<post_id:(\d+)|>/comments/<comment_id:(\d+)|$>' => 'comment/delete',
             ],
         ],
         
