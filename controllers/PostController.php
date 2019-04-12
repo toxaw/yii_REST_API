@@ -135,7 +135,7 @@ class PostController extends Controller
 
                 unset($post['id']);
 
-                $post['image'] = Yii::$app->urlManager->createAbsoluteUrl(Yii::getAlias('@imageUrl') .'/'. $post['image']['name']);
+                $post['image'] = Yii::$app->urlManager->createAbsoluteUrl(Yii::getAlias('@imageUrl') . '/' . $post['image']['name']);
 
                 $post['datetime'] = Yii::$app->formatter->asDate($post['datetime'], 'php:H:i d.m.Y');
 
@@ -191,49 +191,26 @@ class PostController extends Controller
             ]; 
         }
     }
-/*
+
     public function actionGetposts()
-    {
-        if($model = Post::findOne($post_id))
-        {   
-            $model->delete();
-            
-            Yii::$app->response->statusCode = 201;
+    {   
+        $absoluteUrl = Yii::$app->urlManager->createAbsoluteUrl('') . Yii::getAlias('@imageUrl') . '/';
 
-            Yii::$app->response->statusText = 'Successful delete';    
+        $posts = Post::find()->select(['title',"DATE_FORMAT(`datetime`, '%H:%i %d.%m.%Y') as datetime",'anons','text','round(rating, 1) as rating',"CONCAT('$absoluteUrl', image) as image"])->asArray()->all();
 
-            return [
-                'status'    =>  'true',
-            ];         
-        }
+        Yii::$app->response->statusCode = 200;
+
+        Yii::$app->response->statusText = 'List posts';    
+
+        return $posts;        
+        
     }
 
     public function actionGetpost($post_id = null)
     {
-        if($model = Post::findOne($post_id))
-        {   
-            $model->delete();
-            
-            Yii::$app->response->statusCode = 201;
-
-            Yii::$app->response->statusText = 'Successful delete';    
-
-            return [
-                'status'    =>  'true',
-            ];         
-        }
-        else
-        {          
-            Yii::$app->response->statusCode = 404;
-
-            Yii::$app->response->statusText = 'Post not found';    
-
-            return [
-                'message' => 'Post not found'
-            ]; 
-        }
+        
     }
-*/
+
     protected function formatError($model)
     {
         $error = [];
