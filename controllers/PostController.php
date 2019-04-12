@@ -217,6 +217,8 @@ class PostController extends Controller
 
             $post['rating'] = round($post['rating'], 1);
 
+            unset($post['id']);
+
             $post['comments'] = $posts = Comment::find()->select(['id as comment_id',"DATE_FORMAT(`datetime`, '%H:%i %d.%m.%Y') as datetime",'author','comment'])->where(['post_id' => $post_id])->asArray()->all();
 
             Yii::$app->response->statusCode = 200;
