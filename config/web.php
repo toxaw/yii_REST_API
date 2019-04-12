@@ -58,6 +58,9 @@ $config = [
             'POST api/posts' => 'post/posts',
             'POST api/posts/<post_id:(\d+)|$>' => 'post/edit',
             'DELETE api/posts/<post_id:(\d+)|$>' => 'post/delete',
+            'GET api/posts' => 'post/getposts',
+            'GET api/posts/<post_id:(\d+)|$>' => 'post/getpost',
+            'POST api/posts/<post_id:(\d+)|>/comments' => 'comment/comments',
             ],
         ],
         

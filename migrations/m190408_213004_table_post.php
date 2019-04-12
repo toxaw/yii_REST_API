@@ -17,9 +17,10 @@ class m190408_213004_table_post extends Migration
             'title' => $this->string(255),
             'anons' => $this->text(),
             'text' => $this->text(),
-            'image' => $this->integer(1),
             'image' => $this->string(255),
             'datetime'  => $this->dateTime(),
+            'rating' => $this->float(),
+            'rating_sum' => $this->integer()
         ]);
     }
 

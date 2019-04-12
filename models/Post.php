@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 
+use app\models\Comment;
 /**
  * This is the model class for table "post".
  *
@@ -55,10 +56,17 @@ class Post extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getComments()
+    {
+        return $this->hasMany(Comment::className(), ['post_id' => 'id']);
+    }
+
     public function create()
     {
         if ($this->validate()) 
         {
+            date_default_timezone_set('Europe/Moscow');
+
             $this->image->name = time() . $this->image->name; 
 
             $fileName = $this->image->baseName . '.' . $this->image->extension;

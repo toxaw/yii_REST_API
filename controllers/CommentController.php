@@ -9,14 +9,17 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Post;
+use app\models\Comment;
 use yii\web\UploadedFile;
 
-class PostController extends Controller
+class CommentController extends Controller
 {
     /**
      * {@inheritdoc}
      */
-
+   
+    protected $isAdmin, $token;
+    
     public $enableCsrfValidation = false;
 
     public function behaviors()
@@ -60,15 +63,17 @@ class PostController extends Controller
 
     public function beforeAction($action)
     {
+        $this->isAdmin = false;
+
         Yii::$app->response->format = Response::FORMAT_JSON;
 
-        if(!in_array(Yii::$app->controller->action->id, ['getpost', 'getposts']))
+        if(!in_array(Yii::$app->controller->action->id, ['comments']))
         {
-            $token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
+            $this->token = preg_replace('/^Bearer\s/', '', Yii::$app->request->headers->get('authorization'));
 
             $model = new User();
 
-            if(!$model->findIdentityByAccessToken($token))
+            if(!$model->findIdentityByAccessToken($this->token))
             {
                 Yii::$app->response->statusCode = 401;
 
@@ -80,70 +85,40 @@ class PostController extends Controller
 
                 return false;                  
             }
+            else
+            {
+                 $this->isAdmin = true;
+            }
         }
 
         return true;
     }
 
-    public function actionPosts()
-    {
-        $model = new Post();
-        
-        $model->scenario = 'create';
-
-        $model->load(['Post' => Yii::$app->request->post()]);
-
-        $model->image = UploadedFile::getInstanceByName('image');
-
-        if ($post_id = $model->create()) 
-        {
-            Yii::$app->response->statusCode = 201;
-
-            Yii::$app->response->statusText = 'Successful creation';    
-
-            return [
-                'status'    =>  'true',
-                'post_id'     =>  $post_id
-            ];
-        }
-
-        Yii::$app->response->statusCode = 400;
-
-        Yii::$app->response->statusText = 'Creating error';    
-
-        return [
-            'status'    =>  'false',
-            'message'   =>  $this->formatError($model)
-        ]; 
-    }
-
-    public function actionEdit($post_id = null)
+    public function actionComments($post_id = null)
     {
         if($model = Post::findOne($post_id))
-        { 
-            $model->load(['Post' => Yii::$app->request->post()]);
+        {   
+            $model = new Comment();
 
-            $model->image = UploadedFile::getInstanceByName('image');
+            $model->post_id = $post_id;
+
+            $model->load(['Comment' => Yii::$app->request->post()]);
             
-            if ($model->create()) 
+            if($this->isAdmin)
+            {
+                $model->author = User::findOne(['token' => $this->token])->login;
+            }
+
+            if($comment_id = $model->create())
             {
                 Yii::$app->response->statusCode = 201;
 
                 Yii::$app->response->statusText = 'Successful creation';    
 
-                $post = $model->toArray();
-
-                unset($post['id']);
-
-                $post['image'] = Yii::$app->urlManager->createAbsoluteUrl(Yii::getAlias('@imageUrl') .'/'. $post['image']['name']);
-
-                $post['datetime'] = Yii::$app->formatter->asDate($post['datetime'], 'php:H:i d.m.Y');
-
                 return [
-                    'status'    =>  'true',
-                    'post'     =>  $post
+                    'status'    =>  'true'
                 ];
-            }
+            }         
         }
         else
         {          
@@ -158,12 +133,12 @@ class PostController extends Controller
 
         Yii::$app->response->statusCode = 400;
 
-        Yii::$app->response->statusText = 'Editing error';    
+        Yii::$app->response->statusText = 'Creating error';    
 
         return [
             'status'    =>  'false',
             'message'   =>  $this->formatError($model)
-        ];         
+        ];
     }
 
     public function actionDelete($post_id = null)
@@ -191,49 +166,7 @@ class PostController extends Controller
             ]; 
         }
     }
-/*
-    public function actionGetposts()
-    {
-        if($model = Post::findOne($post_id))
-        {   
-            $model->delete();
-            
-            Yii::$app->response->statusCode = 201;
 
-            Yii::$app->response->statusText = 'Successful delete';    
-
-            return [
-                'status'    =>  'true',
-            ];         
-        }
-    }
-
-    public function actionGetpost($post_id = null)
-    {
-        if($model = Post::findOne($post_id))
-        {   
-            $model->delete();
-            
-            Yii::$app->response->statusCode = 201;
-
-            Yii::$app->response->statusText = 'Successful delete';    
-
-            return [
-                'status'    =>  'true',
-            ];         
-        }
-        else
-        {          
-            Yii::$app->response->statusCode = 404;
-
-            Yii::$app->response->statusText = 'Post not found';    
-
-            return [
-                'message' => 'Post not found'
-            ]; 
-        }
-    }
-*/
     protected function formatError($model)
     {
         $error = [];
