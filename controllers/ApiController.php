@@ -102,7 +102,7 @@ class ApiController extends Controller
             Yii::$app->response->statusText = 'Successful authorization';    
 
             return [
-                'status'    =>  true,
+                'status'    =>  'true',
                 'token'     =>  $token
             ];
         }
@@ -119,9 +119,10 @@ class ApiController extends Controller
 
     public function actionPosts()
     {
-
         $model = new Post();
         
+        $model->scenario = 'create';
+
         $model->load(['Post' => Yii::$app->request->post()]);
 
         $model->image = UploadedFile::getInstanceByName('image');
@@ -133,7 +134,7 @@ class ApiController extends Controller
             Yii::$app->response->statusText = 'Successful creation';    
 
             return [
-                'status'    =>  true,
+                'status'    =>  'true',
                 'post_id'     =>  $post_id
             ];
         }
@@ -143,9 +144,58 @@ class ApiController extends Controller
         Yii::$app->response->statusText = 'Creating error';    
 
         return [
-            'status'    =>  false,
+            'status'    =>  'false',
             'message'   =>  $this->formatError($model)
         ]; 
+    }
+
+    public function actionEdit($post_id = null)
+    {
+        if($model = Post::findOne($post_id))
+        {
+            $model->load(['Post' => Yii::$app->request->post()]);
+
+            $model->image = UploadedFile::getInstanceByName('image');
+            
+            if ($model->create()) 
+            {
+                Yii::$app->response->statusCode = 201;
+
+                Yii::$app->response->statusText = 'Successful creation';    
+
+                $post = $model->toArray();
+
+                unset($post['id']);
+
+                $post['image'] = Yii::$app->urlManager->createAbsoluteUrl(Yii::getAlias('@imageUrl') .'/'. $post['image']['name']);
+
+                $post['datetime'] = Yii::$app->formatter->asDate($post['datetime'], 'php:H:i d.m.Y');
+
+                return [
+                    'status'    =>  'true',
+                    'post'     =>  $post
+                ];
+            }
+        }
+        else
+        {          
+            Yii::$app->response->statusCode = 404;
+
+            Yii::$app->response->statusText = 'Post not found';    
+
+            return [
+                'message' => 'Post not found'
+            ]; 
+        }
+
+        Yii::$app->response->statusCode = 400;
+
+        Yii::$app->response->statusText = 'Editing error';    
+
+        return [
+            'status'    =>  'false',
+            'message'   =>  $this->formatError($model)
+        ];         
     }
 
     protected function formatError($model)

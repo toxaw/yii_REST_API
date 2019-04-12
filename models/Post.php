@@ -19,8 +19,6 @@ class Post extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-
-    public $imageFile;
     
     public static function tableName()
     {
@@ -34,12 +32,11 @@ class Post extends \yii\db\ActiveRecord
     {
         return [
             [['text', 'anons'], 'string'],
-            [['date'], 'safe'],
+            [['datetime'], 'safe'],
             [['title'], 'string', 'max' => 255],
             [['image'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg', 'maxSize' => 1024 * 1024 * 2],
             [['title','anons', 'text'], 'required', 'message' => 'is empty'],
-            ['title', 'unique',  'message' => 'is exists'],
-           // [''] уникальность тайтла
+            ['title', 'unique', 'on' => 'create',  'message' => 'is exists'],
         ];
     }
 
@@ -54,7 +51,7 @@ class Post extends \yii\db\ActiveRecord
             'anons' => 'anons',
             'text' => 'text',
             'image' => 'image',
-            'date' => 'date',
+            'datetime' => 'datetime',
         ];
     }
 
@@ -62,15 +59,24 @@ class Post extends \yii\db\ActiveRecord
     {
         if ($this->validate()) 
         {
+            $this->image->name = time() . $this->image->name; 
+
             $fileName = $this->image->baseName . '.' . $this->image->extension;
 
-            $this->image->saveAs(Yii::getAlias('@imagePath'). $fileName);
+            $this->image->saveAs(Yii::getAlias('@imagePath') . $fileName);
 
-            $this->date = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
+            if($this->IsNewRecord)
+            {                
+                $this->datetime = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
+            }
+            else
+            {   
+                @unlink(Yii::getAlias('@imagePath') . $this->findOne($this->id)->image);
+            }
 
             $this->save(false);
 
-            return $this->getPrimaryKey();
+            return $this->getPrimaryKey();      
         } 
         else 
         {

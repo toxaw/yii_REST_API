@@ -10,7 +10,8 @@ $config = [
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
-        '@imagePath' => '@app/api/post_images/'
+        '@imagePath' => '@app/api/post_images/',
+        '@imageUrl' => 'api/post_images/'
     ],
     'components' => [
         'request' => [
@@ -50,8 +51,12 @@ $config = [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
+            'enableStrictParsing' => true,
             'rules' => [
-
+            '/' => 'site/index',
+            'POST api/auth' => 'api/auth',
+            'POST api/posts' => 'api/posts',
+            'POST api/posts/<post_id:(\d+)|$>' => 'api/edit',
             ],
         ],
         

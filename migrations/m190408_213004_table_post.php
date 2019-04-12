@@ -19,7 +19,7 @@ class m190408_213004_table_post extends Migration
             'text' => $this->text(),
             'image' => $this->integer(1),
             'image' => $this->string(255),
-            'date'  => $this->dateTime(),
+            'datetime'  => $this->dateTime(),
         ]);
     }
 
